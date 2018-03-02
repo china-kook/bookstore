@@ -13,6 +13,11 @@ import com.ikook.bookstore.service.BookService;
 import com.ikook.bookstore.web.CriteriaBook;
 import com.ikook.bookstore.web.Page;
 
+/**
+ * 
+ * @author ikook
+ *
+ */
 public class BookServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
