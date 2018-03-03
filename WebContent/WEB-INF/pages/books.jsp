@@ -5,20 +5,11 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Insert title here</title>
+<title>图书列表</title>
 <script type="text/javascript" src="script/jquery-1.7.2.min.js"></script>
 <script type="text/javascript">
 
 	$(function() {
-		$("a").click(function() {
-			var serializeVal = $(":hidden").serialize();
-			
-			var href = this.href  + "&" + serializeVal;
-			
-			window.location.href = href;
-			return false;
-		});
-		
 		$("#pageNo").change(function(){
 			var val = $(this).val();
 			val = $.trim(val);
@@ -49,13 +40,10 @@
 		});
 	})
 	
-	
 </script>
+<%@include file="/commons/queryCondition.jsp" %>
 </head>
 <body>
-	
-	<input type="hidden" name="minPrice" value="${param.minPrice }"/>
-	<input type="hidden" name="maxPrice" value="${param.maxPrice }"/>
 
 	<center>
 
@@ -76,7 +64,7 @@
 			
 				<tr>
 					<td>
-						<a href="">${book.title }</a>
+						<a href="bookServlet?method=getBook&pageNo=${bookpage.pageNo }&id=${book.id}">${book.title }</a>
 						<br>
 						${book.author }
 					</td>
