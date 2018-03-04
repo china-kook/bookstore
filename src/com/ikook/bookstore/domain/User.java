@@ -8,9 +8,11 @@ public class User {
 	private Integer userId;
 	private String username;
 	private int accountId;
+	
+	public User() {
+	}
 
 	public User(Integer userId, String username, int accountId) {
-		super();
 		this.userId = userId;
 		this.username = username;
 		this.accountId = accountId;

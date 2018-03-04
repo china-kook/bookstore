@@ -21,11 +21,12 @@ public class TradeItem {
 	public TradeItem() {
 	}
 
-	public TradeItem(Integer tradeItemId, int quantity, Integer bookId, Integer tradeId) {
+	public TradeItem(Integer tradeItemId, Integer bookId, int quantity,
+			Integer tradeId) {
 		super();
 		this.tradeItemId = tradeItemId;
-		this.quantity = quantity;
 		this.bookId = bookId;
+		this.quantity = quantity;
 		this.tradeId = tradeId;
 	}
 

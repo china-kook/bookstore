@@ -14,13 +14,14 @@ import org.apache.commons.dbutils.handlers.ScalarHandler;
 import com.ikook.bookstore.dao.Dao;
 import com.ikook.bookstore.db.JDBCUtils;
 import com.ikook.bookstore.utils.ReflectionUtils;
+import com.ikook.bookstore.web.ConnectionContext;
 
 public class BaseDao<T> implements Dao<T> {
 
 	private QueryRunner queryRunnner = new QueryRunner();
-	
-	private Class<T> clazz; 
-	
+
+	private Class<T> clazz;
+
 	public BaseDao() {
 		clazz = ReflectionUtils.getSuperGenericType(getClass());
 	}
@@ -34,7 +35,7 @@ public class BaseDao<T> implements Dao<T> {
 		ResultSet resultSet = null;
 
 		try {
-			connection = JDBCUtils.getConnection();
+			connection = ConnectionContext.getInstance().get();
 			preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
 			if (args != null) {
@@ -42,9 +43,9 @@ public class BaseDao<T> implements Dao<T> {
 					preparedStatement.setObject(i + 1, args[i]);
 				}
 			}
-			
+
 			preparedStatement.executeUpdate();
-			
+
 			// 获取生成的主键值
 			resultSet = preparedStatement.getGeneratedKeys();
 			if (resultSet.next()) {
@@ -54,7 +55,7 @@ public class BaseDao<T> implements Dao<T> {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			JDBCUtils.release(resultSet, preparedStatement, connection);
+			JDBCUtils.release(resultSet, preparedStatement);
 		}
 
 		return id;
@@ -65,15 +66,13 @@ public class BaseDao<T> implements Dao<T> {
 		Connection connection = null;
 
 		try {
-			
-			connection = JDBCUtils.getConnection();
-			
+
+			connection = ConnectionContext.getInstance().get();
+
 			queryRunnner.update(connection, sql, args);
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			JDBCUtils.release(connection);
 		}
 	}
 
@@ -82,15 +81,13 @@ public class BaseDao<T> implements Dao<T> {
 		Connection connection = null;
 
 		try {
-			
-			connection = JDBCUtils.getConnection();
-			
+
+			connection = ConnectionContext.getInstance().get();
+
 			return queryRunnner.query(connection, sql, new BeanHandler<>(clazz), args);
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			JDBCUtils.release(connection);
 		}
 		return null;
 	}
@@ -100,14 +97,12 @@ public class BaseDao<T> implements Dao<T> {
 		Connection connection = null;
 
 		try {
-			
-			connection = JDBCUtils.getConnection();
+
+			connection = ConnectionContext.getInstance().get();
 			return queryRunnner.query(connection, sql, new BeanListHandler<>(clazz), args);
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			JDBCUtils.release(connection);
 		}
 		return null;
 	}
@@ -117,14 +112,12 @@ public class BaseDao<T> implements Dao<T> {
 		Connection connection = null;
 
 		try {
-			
-			connection = JDBCUtils.getConnection();
+
+			connection = ConnectionContext.getInstance().get();
 			return queryRunnner.query(connection, sql, new ScalarHandler<>(), args);
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			JDBCUtils.release(connection);
 		}
 		return null;
 	}
@@ -134,15 +127,13 @@ public class BaseDao<T> implements Dao<T> {
 		Connection connection = null;
 
 		try {
-			
-			connection = JDBCUtils.getConnection();
-			
+
+			connection = ConnectionContext.getInstance().get();
+
 			queryRunnner.batch(connection, sql, params);
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			JDBCUtils.release(connection);
 		}
 
 	}

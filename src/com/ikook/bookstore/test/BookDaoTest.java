@@ -1,10 +1,14 @@
 package com.ikook.bookstore.test;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.junit.jupiter.api.Test;
 
 import com.ikook.bookstore.dao.BookDao;
 import com.ikook.bookstore.dao.impl.BookDaoImpl;
 import com.ikook.bookstore.domain.Book;
+import com.ikook.bookstore.domain.ShoppingCartItem;
 import com.ikook.bookstore.web.CriteriaBook;
 import com.ikook.bookstore.web.Page;
 
@@ -35,6 +39,33 @@ class BookDaoTest {
 	void testGetStoreNumber() {
 		int storeNumber = bookDao.getStoreNumber(5);
 		System.out.println(storeNumber);
+	}
+	
+	@Test
+	public void testBatchUpdateStoreNumberAndSalesAmount(){
+		Collection<ShoppingCartItem> items = new ArrayList<>();
+		
+		Book book = bookDao.getBook(1);
+		ShoppingCartItem sci = new ShoppingCartItem(book);
+		sci.setQuantity(10);
+		items.add(sci);
+		
+		book = bookDao.getBook(2);
+		sci = new ShoppingCartItem(book);
+		sci.setQuantity(11);
+		items.add(sci);
+		
+		book = bookDao.getBook(3);
+		sci = new ShoppingCartItem(book);
+		sci.setQuantity(12);
+		items.add(sci);
+		
+		book = bookDao.getBook(4);
+		sci = new ShoppingCartItem(book);
+		sci.setQuantity(14);
+		items.add(sci);
+		
+		bookDao.batchUpdateStoreNumberAndSalesAmount(items);
 	}
 
 }

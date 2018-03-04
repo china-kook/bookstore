@@ -1,8 +1,10 @@
 package com.ikook.bookstore.dao;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.ikook.bookstore.domain.Book;
+import com.ikook.bookstore.domain.ShoppingCartItem;
 import com.ikook.bookstore.web.CriteriaBook;
 import com.ikook.bookstore.web.Page;
 
@@ -48,7 +50,12 @@ public interface BookDao {
 	 */
 	public abstract int getStoreNumber(Integer id);
 	
-//	public abstract void batchUpdateStoreNumberAndSalesAmount(Collection<Shopp>)
+	/**
+	 * 根据传入的 ShoppingCartItem 的集合, 批量更新 books 数据表的 storenumber 和 salesnumber 字段的值
+	 * @param items
+	 */
+	public abstract void batchUpdateStoreNumberAndSalesAmount(
+			Collection<ShoppingCartItem> items);
 
 	
 

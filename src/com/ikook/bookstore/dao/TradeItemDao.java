@@ -18,6 +18,6 @@ public interface TradeItemDao {
 	 * @param tradeId
 	 * @return
 	 */
-	public abstract Set<TradeItem> geTradeItemsWithTradeId(Integer tradeId);
+	public abstract Set<TradeItem> getTradeItemsWithTradeId(Integer tradeId);
 
 }

@@ -17,6 +17,6 @@ public interface TradeDao {
 	 * @param userId
 	 * @return
 	 */
-	public abstract Set<Trade> geTradesWithUserId(Integer userId);
+	public abstract Set<Trade> getTradesWithUserId(Integer userId);
 
 }

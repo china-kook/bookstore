@@ -1,9 +1,12 @@
 package com.ikook.bookstore.dao.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.ikook.bookstore.dao.BookDao;
 import com.ikook.bookstore.domain.Book;
+import com.ikook.bookstore.domain.ShoppingCartItem;
 import com.ikook.bookstore.web.CriteriaBook;
 import com.ikook.bookstore.web.Page;
 
@@ -50,6 +53,23 @@ public class BookDaoImpl extends BaseDao<Book> implements BookDao {
 	public int getStoreNumber(Integer id) {
 		String sql = "select storeNumber from mybooks where id = ?";
 		return getSingleVal(sql, id);
+	}
+
+	@Override
+	public void batchUpdateStoreNumberAndSalesAmount(Collection<ShoppingCartItem> items) {
+		String sql = "UPDATE mybooks SET salesAmount = salesAmount + ?, " +
+				"storeNumber = storeNumber - ? " +
+				"WHERE id = ?";
+		
+		Object [][] params = null;
+		params = new Object[items.size()][3];
+		List<ShoppingCartItem> scis = new ArrayList<>(items);		
+		for(int i = 0; i < items.size(); i++){
+			params[i][0] = scis.get(i).getQuantity();
+			params[i][1] = scis.get(i).getQuantity();
+			params[i][2] = scis.get(i).getBook().getId();
+		}
+		batch(sql, params);
 	}
 
 }

@@ -11,9 +11,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.Gson;
+import com.ikook.bookstore.domain.Account;
 import com.ikook.bookstore.domain.Book;
 import com.ikook.bookstore.domain.ShoppingCart;
+import com.ikook.bookstore.domain.ShoppingCartItem;
+import com.ikook.bookstore.domain.User;
+import com.ikook.bookstore.service.AccountService;
 import com.ikook.bookstore.service.BookService;
+import com.ikook.bookstore.service.UserService;
 import com.ikook.bookstore.web.BookStoreWebUtils;
 import com.ikook.bookstore.web.CriteriaBook;
 import com.ikook.bookstore.web.Page;
@@ -47,35 +52,138 @@ public class BookServlet extends HttpServlet {
 		}
 
 	}
-	
+
+	private UserService userService = new UserService();
+
+	protected void cash(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// 1. 简单验证: 验证表单域的值是否符合基本的规范: 是否为空, 是否可以转为 int 类型, 是否是一个 email. 不需要进行查询
+		// 数据库或调用任何的业务方法.
+		String username = request.getParameter("username");
+		String accountId = request.getParameter("accountId");
+
+		StringBuffer errors = validateFormField(username, accountId);
+
+		// 表单验证通过。
+		if (errors.toString().equals("")) {
+			errors = validateUser(username, accountId);
+
+			// 用户名和账号验证通过
+			if (errors.toString().equals("")) {
+				errors = validateBookStoreNumber(request);
+
+				// 库存验证通过
+				if (errors.toString().equals("")) {
+					errors = validateBalance(request, accountId);
+				}
+			}
+		}
+
+		if (!errors.toString().equals("")) {
+			request.setAttribute("errors", errors);
+			request.getRequestDispatcher("/WEB-INF/pages/cash.jsp").forward(request, response);
+			return;
+		}
+
+		// 验证通过执行具体的逻辑操作
+		bookService.cash(BookStoreWebUtils.getShoppingCart(request), username, accountId);
+		response.sendRedirect(request.getContextPath() + "/success.jsp");
+
+	}
+
+	private AccountService accountService = new AccountService();
+
+	// 验证余额是否充足
+	public StringBuffer validateBalance(HttpServletRequest request, String accountId) {
+
+		StringBuffer errors = new StringBuffer("");
+		ShoppingCart cart = BookStoreWebUtils.getShoppingCart(request);
+
+		Account account = accountService.getAccount(Integer.parseInt(accountId));
+		if (cart.getTotalMoney() > account.getBalance()) {
+			errors.append("余额不足!");
+		}
+
+		return errors;
+	}
+
+	// 验证库存是否充足
+	public StringBuffer validateBookStoreNumber(HttpServletRequest request) {
+
+		StringBuffer errors = new StringBuffer("");
+		ShoppingCart cart = BookStoreWebUtils.getShoppingCart(request);
+
+		for (ShoppingCartItem sci : cart.getItems()) {
+			int quantity = sci.getQuantity();
+			int storeNumber = bookService.getBook(sci.getBook().getId()).getStoreNumber();
+
+			if (quantity > storeNumber) {
+				errors.append(sci.getBook().getTitle() + "库存不足<br>");
+			}
+		}
+
+		return errors;
+	}
+
+	// 验证用户名和账号是否匹配
+	public StringBuffer validateUser(String username, String accountId) {
+		boolean flag = false;
+		User user = userService.getUserByUserName(username);
+		if (user != null) {
+			int accountId2 = user.getAccountId();
+			if (accountId.trim().equals("" + accountId2)) {
+				flag = true;
+			}
+		}
+
+		StringBuffer errors2 = new StringBuffer("");
+		if (!flag) {
+			errors2.append("用户名和账号不匹配");
+		}
+
+		return errors2;
+	}
+
+	// 验证表单域是否符合基本的规则: 是否为空.
+	public StringBuffer validateFormField(String username, String accountId) {
+		StringBuffer errors = new StringBuffer("");
+
+		if (username == null || username.trim().equals("")) {
+			errors.append("用户名不能为空<br>");
+		}
+
+		if (accountId == null || accountId.trim().equals("")) {
+			errors.append("账号不能为空");
+		}
+
+		return errors;
+	}
+
 	protected void updateItemQuantity(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
 		// 4. 在 updateItemQuantity 方法中, 获取 quanity, id, 再获取购物车对象, 调用 service 的方法做修改
 		String idString = request.getParameter("id");
 		String quantityStr = request.getParameter("quantity");
-		
-		
+
 		ShoppingCart shoppingCart = BookStoreWebUtils.getShoppingCart(request);
-		
-		int id = -1; 
+
+		int id = -1;
 		int quantity = -1;
-		
+
 		try {
 			id = Integer.parseInt(idString);
 			quantity = Integer.parseInt(quantityStr);
 		} catch (NumberFormatException e) {
 		}
-		
-		if(id > 0 && quantity > 0)
+
+		if (id > 0 && quantity > 0)
 			bookService.updateItemQuantity(shoppingCart, id, quantity);
-		
-		
+
 		// 5. 传回 JSON 数据: bookNumber:xx, totalMoney
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("bookNumber", shoppingCart.getBookNumber());
 		result.put("totalMoney", shoppingCart.getTotalMoney());
-		
+
 		Gson gson = new Gson();
 		String jsonStr = gson.toJson(result);
 		response.setContentType("text/javascript");
@@ -104,7 +212,7 @@ public class BookServlet extends HttpServlet {
 
 		ShoppingCart cart = BookStoreWebUtils.getShoppingCart(request);
 		bookService.removeItemFromShoppingCart(cart, id);
-		
+
 		if (cart.isEmpty()) {
 			request.getRequestDispatcher("/WEB-INF/pages/emptycart.jsp").forward(request, response);
 			return;
